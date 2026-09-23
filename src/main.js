@@ -41,6 +41,10 @@ const state={
 screen:"home",
 joined:false,
 started:false,
+isCreator:false,
+realtimeConnected:false,
+realtimeStatus:realtimeConfigured?"CONNECTING":"LOCAL_MODE",
+participants:[],
 room:"DFND-7K4P",
 round:1,
 maxRounds:20,
@@ -55,15 +59,20 @@ thesis:"AI-IoT Predictive Maintenance for Residential Breakers via Waveform and 
 };
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const makeRoomCode=()=>{const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let out="DFND-";for(let i=0;i<4;i++)out+=chars[Math.floor(Math.random()*chars.length)];return out};
 const getMember=id=>members.find(m=>m.id===id)||members[0];
 const localize=q=>localized[state.language]?.(q)||q;
 const baseMembers=()=>state.participants.length?state.participants.map((p,i)=>({id:p.id,name:p.name,initials:(p.name||"??").slice(0,2).toUpperCase(),color:["lime","blue","purple","amber"][i%4],online:true,role:p.role})):[{id:clientId,name:state.memberName,initials:(state.memberName||"YO").slice(0,2).toUpperCase(),color:"lime",online:true,role:state.isCreator?"controller":"member"}];
 const memberLabel=id=>{const p=state.participants.find(x=>x.id===id);return p?.name||getMember(id).name};
 async function joinRealtimeRoom(){
- if(!realtimeConfigured){state.realtimeConnected=false;return;}
- const result=await connectRoom(state.room,{name:state.memberName,role:state.isCreator?"controller":"member",onPresence:people=>{state.participants=people.sort((a,b)=>new Date(a.joinedAt)-new Date(b.joinedAt));state.connected=state.participants.length; if(state.screen==="lobby")renderLobby();else if(state.screen==="room")renderRoom()},onEvent:handleRealtimeEvent});
- state.realtimeConnected=result.ok;
- if(result.ok){if(state.screen==="lobby")renderLobby();else if(state.screen==="room")renderRoom();}
+ if(!realtimeConfigured){state.realtimeConnected=false;state.realtimeStatus="LOCAL_MODE";renderLobby();return;}
+ state.realtimeStatus="CONNECTING";renderLobby();
+ const result=await connectRoom(state.room,{name:state.memberName,role:state.isCreator?"controller":"member",
+   onStatus:status=>{state.realtimeStatus=status;state.realtimeConnected=status==="SYNCED";if(state.screen==="lobby")renderLobby()},
+   onPresence:people=>{state.participants=people.sort((a,b)=>new Date(a.joinedAt)-new Date(b.joinedAt));state.connected=state.participants.length;if(state.screen==="lobby")renderLobby();else if(state.screen==="room")renderRoom()},
+   onEvent:handleRealtimeEvent});
+ state.realtimeConnected=result.ok;state.realtimeStatus=result.ok?"SYNCED":(result.reason==="missing_env"?"LOCAL_MODE":"ERROR");
+ if(state.screen==="lobby")renderLobby();else if(state.screen==="room")renderRoom();
  if(result.ok&&!state.isCreator)await sendEvent("request_snapshot",{requester:clientId});
 }
 async function handleRealtimeEvent(e){
@@ -85,8 +94,8 @@ document.querySelector("#app").innerHTML=`
 <div class="home-features"><div><b>01</b><strong>AI-controlled</strong><span>No human host. The AI runs the defense.</span></div><div><b>02</b><strong>Group-aware</strong><span>Every submitted answer becomes part of the panel's memory.</span></div><div><b>03</b><strong>Adaptive attacks</strong><span>Contradictions and weak claims trigger follow-ups.</span></div></div>
 </section>
 </main>`;
-document.querySelector("#create").onclick=()=>{state.screen="join";state.room="DFND-"+Math.random().toString(36).slice(2,6).toUpperCase();renderJoin(true)};
-document.querySelector("#join").onclick=()=>{state.screen="join";renderJoin(false)};
+document.querySelector("#create").onclick=()=>{state.screen="join";state.isCreator=true;state.joined=false;state.started=false;state.participants=[];state.transcript=[];state.room=makeRoomCode();state.memberName="You";renderJoin(true)};
+document.querySelector("#join").onclick=()=>{state.screen="join";state.isCreator=false;state.joined=false;state.started=false;state.participants=[];state.transcript=[];renderJoin(false)};
 }
 
 function renderJoin(created=false){
@@ -104,8 +113,8 @@ document.querySelector("#app").innerHTML=`
 </section>
 </main>`;
 document.querySelector("#joinLanguage").value=state.language;document.querySelector("#joinStyle").value=state.personality;
-document.querySelector("#back").onclick=()=>{state.screen="home";home()};
-document.querySelector("#enter").onclick=()=>{const code=document.querySelector("#roomInput").value.trim().toUpperCase();const name=document.querySelector("#nameInput").value.trim();if(!code||!name){alert("Enter a room code and your name first.");return}state.room=code;state.memberName=name;state.joined=true;state.isCreator=created;state.screen="lobby";state.language=document.querySelector("#joinLanguage").value;state.personality=document.querySelector("#joinStyle").value;renderLobby();joinRealtimeRoom()};
+document.querySelector("#back").onclick=()=>{state.screen="home";state.joined=false;state.started=false;home()};
+document.querySelector("#enter").onclick=()=>{const code=document.querySelector("#roomInput").value.trim().toUpperCase().replace(/\s+/g,"");const name=document.querySelector("#nameInput").value.trim();if(!/^DFND-[A-Z0-9]{4}$/.test(code)){alert("Use a room code in this format: DFND-7K4P");document.querySelector("#roomInput").focus();return}if(name.length<2){alert("Enter your name (at least 2 characters).");document.querySelector("#nameInput").focus();return}state.room=code;state.memberName=name.slice(0,24);state.joined=true;state.isCreator=created;state.screen="lobby";state.language=document.querySelector("#joinLanguage").value;state.personality=document.querySelector("#joinStyle").value;state.realtimeConnected=false;state.realtimeStatus=realtimeConfigured?"CONNECTING":"LOCAL_MODE";renderLobby();joinRealtimeRoom()};
 }
 
 function renderLobby(){
@@ -113,7 +122,7 @@ document.querySelector("#app").innerHTML=`
 <main class="room-shell"><header class="topbar"><div class="brand"><span class="logo">D</span><strong>DEFEND</strong><span class="live-pill">● ROOM LOBBY</span>${state.realtimeConnected?'<span class="sync-pill">● SYNCED</span>':realtimeConfigured?'<span class="sync-pill warn">CONNECTING…</span>':'<span class="sync-pill warn">LOCAL MODE</span>'}</div><div class="room-code"><span>ROOM</span><b>${esc(state.room)}</b><button id="copyRoom">Copy</button></div></header>
 <section class="lobby-wrap"><div class="lobby-main"><span class="eyebrow">YOU'RE IN</span><h1>Waiting for the defense to start.</h1><p class="muted">Everyone joins first. Then the AI panelist takes control and selects the first member to answer.</p><div class="lobby-thesis"><span class="label">SHARED THESIS</span><strong>${esc(state.thesis)}</strong></div><div class="lobby-status"><span class="ai-dot"></span><div><strong>AI PANELIST READY</strong><small>No human host. The AI will control the questions, targets, follow-ups, and ending.</small></div></div><button class="primary big full" id="start">Start AI Defense →</button></div>
 <aside class="lobby-side"><div class="side-title">JOINED MEMBERS <span>${state.connected}/4</span></div><div class="members">${baseMembers().map(m=>`<div class="member ${m.id===clientId?"active":""}"><div class="avatar ${m.color}">${m.initials}<i class="on"></i></div><div><strong>${esc(m.id===clientId?state.memberName:m.name)}</strong><small>${m.id===clientId?"YOU · JOINED":"JOINED"}</small></div></div>`).join("")}</div><div class="side-card"><span class="label">PANEL LANGUAGE</span><strong>${state.language.toUpperCase()}</strong></div><div class="side-card"><span class="label">PANEL STYLE</span><strong>${state.personality.toUpperCase()}</strong></div></aside></div></main>`;
-document.querySelector("#start").onclick=async()=>{if(!state.isCreator){alert("Only the room creator can start the AI defense.");return}state.started=true;state.screen="room";state.round=1;const first=state.participants[0]?.id||clientId;state.currentMember=first;state.question=attacks[0];renderRoom();await sendEvent("start",{round:1,currentMember:first,question:attacks[0],language:state.language,personality:state.personality})};
+document.querySelector("#start").onclick=async()=>{if(!state.isCreator)return;state.started=true;state.screen="room";state.round=1;const first=state.participants[0]?.id||clientId;state.currentMember=first;state.question=attacks[0];renderRoom();await sendEvent("start",{round:1,currentMember:first,question:attacks[0],language:state.language,personality:state.personality})};
 document.querySelector("#copyRoom").onclick=async()=>{try{await navigator.clipboard.writeText(state.room);document.querySelector("#copyRoom").textContent="Copied!";setTimeout(()=>document.querySelector("#copyRoom").textContent="Copy",1200)}catch{}};
 }
 
@@ -142,5 +151,6 @@ document.querySelector("#copyRoom").onclick=async()=>{try{await navigator.clipbo
 document.querySelector("#voice").onclick=()=>{const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Recognition)return alert("Voice input is not supported by this browser.");const r=new Recognition();r.lang=state.language==="english"?"en-US":"fil-PH";r.onresult=e=>document.querySelector("#answer").value=e.results[0][0].transcript;r.start()};
 }
 
-function render(){if(state.screen==="home")home();else if(state.screen==="join")renderJoin(false);else if(state.screen==="lobby")renderLobby();else renderRoom()}
+window.addEventListener("beforeunload",()=>{disconnectRoom()});
+function render(){if(state.screen==="home")home();else if(state.screen==="join")renderJoin(state.isCreator&&Boolean(state.room));else if(state.screen==="lobby")renderLobby();else renderRoom()}
 render();
