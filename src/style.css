@@ -9,3 +9,5 @@
 
 .sync-pill{font:500 9px "DM Mono";letter-spacing:.08em;color:#b9ff5c;border:1px solid #b9ff5c30;background:#b9ff5c0b;border-radius:20px;padding:6px 8px}.sync-pill.warn{color:#ffc66e;border-color:#ffc66e30;background:#ffc66e08}
 .primary:disabled{opacity:.35;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+
+.lobby-warning{margin:0 0 15px;padding:12px 14px;border:1px solid #ffc66e30;background:#ffc66e08;color:#b9a27c;border-radius:10px;font-size:11px;line-height:1.5}.lobby-warning::before{content:"⚠ ";color:#ffc66e}.primary:disabled{opacity:.42;cursor:not-allowed;transform:none!important;box-shadow:none!important}.primary:disabled:hover{background:#b9ff5c;transform:none;box-shadow:none}
