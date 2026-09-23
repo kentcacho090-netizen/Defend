@@ -1,115 +1,12 @@
 import "./style.css";
 
-const attacks = [
-"Your title says predictive maintenance. What exactly is being predicted, and what evidence proves the system predicts risk before failure rather than detecting an existing fault?",
-"Why do you need AI instead of fixed voltage, current, waveform, or temperature thresholds?",
-"What are the exact input features extracted from the waveform and thermal measurements?",
-"What happens when the model encounters a fault condition that was not represented in its training data?",
-"How will you prevent the model from learning your laboratory setup instead of the underlying electrical behavior?",
-"What is your ground truth, and how is each training sample labeled?",
-"How will you demonstrate that the model generalizes to different residential loads and conditions?",
-"Explain the difference between fault detection, fault classification, and predictive maintenance in your proposed system.",
-"If waveform and temperature disagree, how does your system resolve the conflict?",
-"What is the consequence of a false negative in this application?",
-"Which part of your predictive-maintenance claim can your prototype actually demonstrate, and which part remains a limitation?",
-"Why did you select your sensing hardware and sampling rate?",
-"How will noise, sensor error, and changing household loads affect the model?",
-"Why are your selected fault conditions representative of residential conditions?",
-"What non-AI baseline will you compare against?",
-"Which evaluation metrics will you report, and why are they appropriate?",
-"How large and diverse must your dataset be before you can make a defensible claim about model performance?",
-"How will you communicate uncertainty when the model is confident but potentially wrong?",
-"What is the strongest unsupported assumption your group has made so far?",
-"If the panel removed the AI component, what useful functionality would remain?"
-];
+const attacks=["Your title says predictive maintenance. What exactly is being predicted, and what evidence proves the system predicts risk before failure rather than detecting an existing fault?","Why do you need AI instead of fixed voltage, current, waveform, or temperature thresholds?","What are the exact input features extracted from the waveform and thermal measurements?","What happens when the model encounters a fault condition that was not represented in its training data?","How will you prevent the model from learning your laboratory setup instead of the underlying electrical behavior?","What is your ground truth, and how is each training sample labeled?","How will you demonstrate that the model generalizes to different residential loads and conditions?","Explain the difference between fault detection, fault classification, and predictive maintenance in your proposed system.","If waveform and temperature disagree, how does your system resolve the conflict?","What is the consequence of a false negative in this application?","Which part of your predictive-maintenance claim can your prototype actually demonstrate, and which part remains a limitation?","Why did you select your sensing hardware and sampling rate?","How will noise, sensor error, and changing household loads affect the model?","Why are your selected fault conditions representative of residential conditions?","What non-AI baseline will you compare against?","Which evaluation metrics will you report, and why are they appropriate?","How large and diverse must your dataset be before you can make a defensible claim about model performance?","How will you communicate uncertainty when the model is confident but potentially wrong?","What is the strongest unsupported assumption your group has made so far?","If the panel removed the AI component, what useful functionality would remain?"];
 
-const members=[
-{id:"a",name:"You",initials:"YO",color:"lime",online:true},
-{id:"b",name:"Member 2",initials:"M2",color:"blue",online:true},
-{id:"c",name:"Member 3",initials:"M3",color:"purple",online:true},
-{id:"d",name:"Member 4",initials:"M4",color:"amber",online:false}
-];
-
-const state={
-room:"DFND-7K4P",
-round:7,
-maxRounds:20,
-currentMember:"b",
-connected:3,
-question:attacks[6],
-transcript:[
-{member:"a",round:5,answer:"We use waveform and thermal measurements as inputs to identify abnormal electrical behavior and support maintenance decisions."},
-{member:"c",round:6,answer:"The model is trained using labeled examples of normal and fault conditions from our experimental setup."}
-]
-};
-
+const localized={english:q=>q,tagalog:q=>({[attacks[0]]:"Okay, ang title ninyo ay predictive maintenance. Ano ba talaga yung pini-predict ng system ninyo, at anong ebidensya ang magpapatunay na kaya niyang mag-predict bago mangyari yung failure, hindi yung nade-detect lang niya yung fault na nangyayari na?",[attacks[1]]:"Bakit kailangan pa ninyo ng AI kung puwede naman kayong gumamit ng fixed voltage, current, waveform, o temperature thresholds? Ano yung maibibigay ng AI na hindi kayang gawin ng simpleng threshold?",[attacks[2]]:"Ano mismo yung input features na kinukuha ninyo mula sa waveform at thermal measurements? Paano ninyo sila ine-extract?",[attacks[3]]:"Paano kapag nakakita yung model ng fault condition na wala sa training data ninyo? Ano mismo ang gagawin ng system sa ganitong situation?",[attacks[5]]:"Ano yung ground truth ninyo, at paano ninyo bina-label kung normal o faulty yung bawat sample?",[attacks[6]]:"Paano ninyo mapapatunayan na nagge-generalize yung model sa iba't ibang residential loads at conditions, at hindi lang siya gumagana sa setup na ginamit ninyo sa testing?",[attacks[7]]:"Ano ang difference ng fault detection, fault classification, at predictive maintenance sa proposed system ninyo? Gusto kong malinaw kung alin talaga ang ginagawa ng system.",[attacks[8]]:"Paano kung hindi mag-agree yung waveform at temperature readings? Alin ang paniniwalaan ng system, at ano yung basis ninyo para doon?",[attacks[12]]:"Paano maaapektuhan ng noise, sensor error, at pagbabago ng household loads yung model ninyo?",[attacks[10]]:"Alin sa predictive-maintenance claim ninyo ang kaya talagang ipakita ng prototype, at alin doon ang limitation pa ng study ninyo?"}[q]||("Okay, pero gusto kong linawin: "+q)),taglish:q=>({[attacks[0]]:"Okay, so predictive maintenance yung title ninyo. What exactly is being predicted? And what evidence do you have na kaya niyang mag-predict before failure, instead na dine-detect lang niya yung fault na existing na?",[attacks[1]]:"Okay, bakit kailangan ng AI dito instead of using fixed voltage, current, waveform, or temperature thresholds? Ano yung advantage ng AI na wala sa simple threshold approach?",[attacks[3]]:"Let's say may fault condition na wala sa training data ninyo. What exactly happens? Paano magre-respond yung model kapag unseen yung condition?",[attacks[5]]:"What is your ground truth, and paano ninyo bina-label each training sample? Ano yung basis na normal siya or faulty?",[attacks[6]]:"How will you prove na nagge-generalize yung model sa different residential loads and conditions, hindi lang sa exact setup ninyo?",[attacks[7]]:"Can you clearly explain the difference between fault detection, fault classification, and predictive maintenance? Kasi these are not the same thing, so saan exactly pumapasok yung system ninyo?"}[q]||q)};
+const members=[{id:"a",name:"You",initials:"YO",color:"lime",online:true},{id:"b",name:"Member 2",initials:"M2",color:"blue",online:true},{id:"c",name:"Member 3",initials:"M3",color:"purple",online:true},{id:"d",name:"Member 4",initials:"M4",color:"amber",online:false}];
+const state={room:"DFND-7K4P",round:7,maxRounds:20,currentMember:"b",connected:3,language:"taglish",personality:"aggressive",question:attacks[6],transcript:[{member:"a",round:5,answer:"We use waveform and thermal measurements as inputs to identify abnormal electrical behavior and support maintenance decisions."},{member:"c",round:6,answer:"The model is trained using labeled examples of normal and fault conditions from our experimental setup."}]};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const getMember=id=>members.find(m=>m.id===id)||members[0];
-
-function addAnswer(text){
-state.transcript.push({member:"a",round:state.round,answer:text});
-state.round++;
-state.currentMember=members[(state.round+1)%members.length].id;
-state.question=attacks[Math.min(state.round-1,attacks.length-1)];
-render();
-}
-
-function render(){
-document.querySelector("#app").innerHTML=`
-<main class="room-shell">
-<header class="topbar">
-<div class="brand"><span class="logo">D</span><strong>DEFEND</strong><span class="live-pill">● LIVE ROOM</span></div>
-<div class="room-code"><span>ROOM</span><b>${state.room}</b><button id="copyRoom">Copy</button></div>
-</header>
-<div class="room-grid">
-<aside class="sidebar">
-<div class="side-title">THESIS TEAM <span>${state.connected}/4 online</span></div>
-<div class="members">
-${members.map(m=>`<div class="member ${m.id===state.currentMember?"active":""}">
-<div class="avatar ${m.color}">${m.initials}<i class="${m.online?"on":"off"}"></i></div>
-<div><strong>${esc(m.name)}</strong><small>${m.id===state.currentMember?"ANSWERING NOW":m.online?"ONLINE":"OFFLINE"}</small></div>
-</div>`).join("")}
-</div>
-<div class="side-card"><span class="label">ROUND</span><strong>${state.round} <small>/ ${state.maxRounds}</small></strong><div class="progress"><i style="width:${Math.min(100,state.round/state.maxRounds*100)}%"></i></div></div>
-<div class="side-card threat"><span class="label">PANEL MODE</span><strong>AGGRESSIVE</strong><p>The AI may challenge any member using another member's previous answer.</p></div>
-</aside>
-<section class="main-room">
-<div class="thesis-banner"><span class="label">LIVE DEFENSE · SHARED THESIS</span><strong>AI-IoT Predictive Maintenance for Residential Breakers via Waveform and Thermal Analysis in Dagupan.</strong></div>
-<section class="panel-card">
-<div class="panel-meta"><span class="ai-dot"></span><span>AI PANEL</span><em>Listening to ${esc(getMember(state.currentMember).name)}</em></div>
-<h1>${esc(state.question)}</h1>
-<div class="attack-note"><b>WHY THIS ATTACK</b><span>Previous answers created a possible methodology gap. The panel is testing whether the group's claim is supported by evidence.</span></div>
-</section>
-<section class="answer-card">
-<div class="answer-head"><div><span class="label">ANSWERING</span><strong>${esc(getMember(state.currentMember).name)}</strong></div><span class="turn">YOUR TURN</span></div>
-<textarea id="answer" placeholder="Everyone in the room will see your answer after you submit it..."></textarea>
-<div class="actions"><button class="secondary" id="voice">🎙 Voice answer</button><button class="primary" id="submit">Submit to panel →</button></div>
-</section>
-<section class="feed">
-<div class="feed-head"><span>LIVE DEFENSE FEED</span><small>Everyone sees submitted answers</small></div>
-${state.transcript.slice().reverse().map(t=>`<article class="feed-item"><div class="feed-avatar">${getMember(t.member).initials}</div><div><div class="feed-name">${esc(getMember(t.member).name)} <small>· Round ${t.round}</small></div><p>${esc(t.answer)}</p></div></article>`).join("")}
-</section>
-</section>
-</div>
-</main>`;
-
-document.querySelector("#submit").onclick=()=>{
-const box=document.querySelector("#answer");
-const text=box.value.trim();
-if(!text)return box.focus();
-addAnswer(text);
-};
-document.querySelector("#copyRoom").onclick=async()=>{
-try{await navigator.clipboard.writeText(state.room);document.querySelector("#copyRoom").textContent="Copied!";setTimeout(()=>document.querySelector("#copyRoom").textContent="Copy",1200)}
-catch{document.querySelector("#copyRoom").textContent=state.room}
-};
-document.querySelector("#voice").onclick=()=>{
-const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!Recognition)return alert("Voice input is not supported by this browser.");
-const r=new Recognition();
-r.lang="en-US";
-r.onresult=e=>document.querySelector("#answer").value=e.results[0][0].transcript;
-r.start();
-};
-}
-render();
+const localize=q=>localized[state.language]?.(q)||q;
+function addAnswer(text){state.transcript.push({member:state.currentMember,round:state.round,answer:text});state.round++;state.currentMember=members[(state.round+1)%members.length].id;state.question=attacks[Math.min(state.round-1,attacks.length-1)];render()}
+function render(){document.querySelector("#app").innerHTML=`<main class="room-shell"><header class="topbar"><div class="brand"><span class="logo">D</span><strong>DEFEND</strong><span class="live-pill">● LIVE ROOM</span></div><div class="room-code"><span>ROOM</span><b>${state.room}</b><button id="copyRoom">Copy</button></div></header><div class="room-grid"><aside class="sidebar"><div class="side-title">THESIS TEAM <span>${state.connected}/4 online</span></div><div class="members">${members.map(m=>`<div class="member ${m.id===state.currentMember?"active":""}"><div class="avatar ${m.color}">${m.initials}<i class="${m.online?"on":"off"}"></i></div><div><strong>${esc(m.name)}</strong><small>${m.id===state.currentMember?"ANSWERING NOW":m.online?"ONLINE":"OFFLINE"}</small></div></div>`).join("")}</div><div class="side-card"><span class="label">PANEL LANGUAGE</span><select id="language"><option value="taglish" ${state.language==="taglish"?"selected":""}>🇵🇭 Taglish</option><option value="tagalog" ${state.language==="tagalog"?"selected":""}>🇵🇭 Tagalog</option><option value="english" ${state.language==="english"?"selected":""}>🇺🇸 English</option></select></div><div class="side-card"><span class="label">PANEL STYLE</span><select id="personality"><option value="aggressive">🔥 Aggressive</option><option value="balanced">⚖️ Balanced</option><option value="technical">🧠 Technical</option><option value="formal">🎓 Formal</option></select></div><div class="side-card"><span class="label">ROUND</span><strong>${state.round} <small>/ ${state.maxRounds}</small></strong><div class="progress"><i style="width:${Math.min(100,state.round/state.maxRounds*100)}%"></i></div></div><div class="side-card threat"><span class="label">AI PANELIST</span><strong>IN CONTROL</strong><p>No human host. The AI chooses who answers and what weakness to attack next.</p></div></aside><section class="main-room"><div class="thesis-banner"><span class="label">LIVE DEFENSE · SHARED THESIS</span><strong>AI-IoT Predictive Maintenance for Residential Breakers via Waveform and Thermal Analysis in Dagupan.</strong></div><section class="panel-card"><div class="panel-meta"><span class="ai-dot"></span><span>AI PANELIST · ${state.language.toUpperCase()}</span><em>Question for ${esc(getMember(state.currentMember).name)}</em></div><h1>${esc(localize(state.question))}</h1><div class="attack-note"><b>ADAPTIVE ATTACK</b><span>The panel considers the group's previous answers and can switch targets when it finds a contradiction, unsupported claim, or methodology gap.</span></div></section><section class="answer-card"><div class="answer-head"><div><span class="label">ANSWERING</span><strong>${esc(getMember(state.currentMember).name)}</strong></div><span class="turn">YOUR TURN</span></div><textarea id="answer" placeholder="Everyone in the room will see your answer after you submit it..."></textarea><div class="actions"><button class="secondary" id="voice">🎙 Voice answer</button><button class="primary" id="submit">Submit to AI panel →</button></div></section><section class="feed"><div class="feed-head"><span>LIVE DEFENSE FEED</span><small>Shared with the entire group</small></div>${state.transcript.slice().reverse().map(t=>`<article class="feed-item"><div class="feed-avatar">${getMember(t.member).initials}</div><div><div class="feed-name">${esc(getMember(t.member).name)} <small>· Round ${t.round}</small></div><p>${esc(t.answer)}</p></div></article>`).join("")}</section></section></div></main>`;document.querySelector("#submit").onclick=()=>{const box=document.querySelector("#answer");const text=box.value.trim();if(!text)return box.focus();addAnswer(text)};document.querySelector("#language").onchange=e=>{state.language=e.target.value;render()};document.querySelector("#personality").onchange=e=>state.personality=e.target.value;document.querySelector("#copyRoom").onclick=async()=>{try{await navigator.clipboard.writeText(state.room);document.querySelector("#copyRoom").textContent="Copied!";setTimeout(()=>document.querySelector("#copyRoom").textContent="Copy",1200)}catch{document.querySelector("#copyRoom").textContent=state.room}};document.querySelector("#voice").onclick=()=>{const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Recognition)return alert("Voice input is not supported by this browser.");const r=new Recognition();r.lang=state.language==="english"?"en-US":"fil-PH";r.onresult=e=>document.querySelector("#answer").value=e.results[0][0].transcript;r.start()}}render();
