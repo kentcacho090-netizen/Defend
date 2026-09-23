@@ -1,117 +1,115 @@
 import "./style.css";
 
-const state = {
-  round: 1,
-  maxRounds: 20,
-  answers: [],
-  current: "Your system is called predictive maintenance. What exactly is being predicted, and what evidence in your methodology distinguishes prediction from simply detecting an existing fault?",
-  thesis: "AI-IoT Predictive Maintenance for Residential Breakers via Waveform and Thermal Analysis in Dagupan."
-};
-
 const attacks = [
-  "You used the word “predictive.” What temporal evidence proves the abnormal condition appears before failure rather than at the moment of failure?",
-  "Why is an AI model necessary instead of using fixed voltage, current, or temperature thresholds?",
-  "What are your actual input features, and exactly how are they extracted from the waveform and thermal measurements?",
-  "If a fault condition is absent from the training data, what does your system do?",
-  "How will you prevent the model from learning the specific test setup instead of the underlying fault behavior?",
-  "What is your ground truth, and who or what determines whether a sample is actually faulty?",
-  "How will you validate that your model generalizes beyond the data used during training?",
-  "What is the difference between fault detection, fault classification, and predictive maintenance in your system?",
-  "If waveform and temperature disagree, which signal does the system trust and why?",
-  "What is the consequence of a false negative in a residential breaker monitoring system?",
-  "What limitations in your prototype prevent you from claiming that it predicts actual breaker failure?",
-  "Why did you choose your sensing hardware and sampling approach?",
-  "How will noise, sensor error, and changing household loads affect your model?",
-  "What makes your selected fault conditions representative of real residential conditions?",
-  "What baseline method will you compare the AI model against?",
-  "What metric matters most for your application: accuracy, precision, recall, F1-score, or something else?",
-  "How do you know your dataset is large and diverse enough for the model?",
-  "If your model gives a confident but incorrect prediction, how will the system communicate that uncertainty?",
-  "Which part of your claim is the hardest to prove experimentally?",
-  "If the panel removed the AI component, what useful functionality would remain?"
+"Your title says predictive maintenance. What exactly is being predicted, and what evidence proves the system predicts risk before failure rather than detecting an existing fault?",
+"Why do you need AI instead of fixed voltage, current, waveform, or temperature thresholds?",
+"What are the exact input features extracted from the waveform and thermal measurements?",
+"What happens when the model encounters a fault condition that was not represented in its training data?",
+"How will you prevent the model from learning your laboratory setup instead of the underlying electrical behavior?",
+"What is your ground truth, and how is each training sample labeled?",
+"How will you demonstrate that the model generalizes to different residential loads and conditions?",
+"Explain the difference between fault detection, fault classification, and predictive maintenance in your proposed system.",
+"If waveform and temperature disagree, how does your system resolve the conflict?",
+"What is the consequence of a false negative in this application?",
+"Which part of your predictive-maintenance claim can your prototype actually demonstrate, and which part remains a limitation?",
+"Why did you select your sensing hardware and sampling rate?",
+"How will noise, sensor error, and changing household loads affect the model?",
+"Why are your selected fault conditions representative of residential conditions?",
+"What non-AI baseline will you compare against?",
+"Which evaluation metrics will you report, and why are they appropriate?",
+"How large and diverse must your dataset be before you can make a defensible claim about model performance?",
+"How will you communicate uncertainty when the model is confident but potentially wrong?",
+"What is the strongest unsupported assumption your group has made so far?",
+"If the panel removed the AI component, what useful functionality would remain?"
 ];
 
-function nextQuestion(answer) {
-  state.answers.push({ round: state.round, question: state.current, answer });
-  if (state.round >= state.maxRounds) {
-    showResults();
-    return;
-  }
-  const index = Math.min(state.round, attacks.length - 1);
-  state.round++;
-  state.current = attacks[index];
-  render();
+const members=[
+{id:"a",name:"You",initials:"YO",color:"lime",online:true},
+{id:"b",name:"Member 2",initials:"M2",color:"blue",online:true},
+{id:"c",name:"Member 3",initials:"M3",color:"purple",online:true},
+{id:"d",name:"Member 4",initials:"M4",color:"amber",online:false}
+];
+
+const state={
+room:"DFND-7K4P",
+round:7,
+maxRounds:20,
+currentMember:"b",
+connected:3,
+question:attacks[6],
+transcript:[
+{member:"a",round:5,answer:"We use waveform and thermal measurements as inputs to identify abnormal electrical behavior and support maintenance decisions."},
+{member:"c",round:6,answer:"The model is trained using labeled examples of normal and fault conditions from our experimental setup."}
+]
+};
+
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const getMember=id=>members.find(m=>m.id===id)||members[0];
+
+function addAnswer(text){
+state.transcript.push({member:"a",round:state.round,answer:text});
+state.round++;
+state.currentMember=members[(state.round+1)%members.length].id;
+state.question=attacks[Math.min(state.round-1,attacks.length-1)];
+render();
 }
 
-function scoreAnswer(text) {
-  const words = text.trim().split(/\\s+/).filter(Boolean).length;
-  const detail = Math.min(100, 35 + words * 2);
-  return Math.round(detail);
-}
+function render(){
+document.querySelector("#app").innerHTML=`
+<main class="room-shell">
+<header class="topbar">
+<div class="brand"><span class="logo">D</span><strong>DEFEND</strong><span class="live-pill">● LIVE ROOM</span></div>
+<div class="room-code"><span>ROOM</span><b>${state.room}</b><button id="copyRoom">Copy</button></div>
+</header>
+<div class="room-grid">
+<aside class="sidebar">
+<div class="side-title">THESIS TEAM <span>${state.connected}/4 online</span></div>
+<div class="members">
+${members.map(m=>`<div class="member ${m.id===state.currentMember?"active":""}">
+<div class="avatar ${m.color}">${m.initials}<i class="${m.online?"on":"off"}"></i></div>
+<div><strong>${esc(m.name)}</strong><small>${m.id===state.currentMember?"ANSWERING NOW":m.online?"ONLINE":"OFFLINE"}</small></div>
+</div>`).join("")}
+</div>
+<div class="side-card"><span class="label">ROUND</span><strong>${state.round} <small>/ ${state.maxRounds}</small></strong><div class="progress"><i style="width:${Math.min(100,state.round/state.maxRounds*100)}%"></i></div></div>
+<div class="side-card threat"><span class="label">PANEL MODE</span><strong>AGGRESSIVE</strong><p>The AI may challenge any member using another member's previous answer.</p></div>
+</aside>
+<section class="main-room">
+<div class="thesis-banner"><span class="label">LIVE DEFENSE · SHARED THESIS</span><strong>AI-IoT Predictive Maintenance for Residential Breakers via Waveform and Thermal Analysis in Dagupan.</strong></div>
+<section class="panel-card">
+<div class="panel-meta"><span class="ai-dot"></span><span>AI PANEL</span><em>Listening to ${esc(getMember(state.currentMember).name)}</em></div>
+<h1>${esc(state.question)}</h1>
+<div class="attack-note"><b>WHY THIS ATTACK</b><span>Previous answers created a possible methodology gap. The panel is testing whether the group's claim is supported by evidence.</span></div>
+</section>
+<section class="answer-card">
+<div class="answer-head"><div><span class="label">ANSWERING</span><strong>${esc(getMember(state.currentMember).name)}</strong></div><span class="turn">YOUR TURN</span></div>
+<textarea id="answer" placeholder="Everyone in the room will see your answer after you submit it..."></textarea>
+<div class="actions"><button class="secondary" id="voice">🎙 Voice answer</button><button class="primary" id="submit">Submit to panel →</button></div>
+</section>
+<section class="feed">
+<div class="feed-head"><span>LIVE DEFENSE FEED</span><small>Everyone sees submitted answers</small></div>
+${state.transcript.slice().reverse().map(t=>`<article class="feed-item"><div class="feed-avatar">${getMember(t.member).initials}</div><div><div class="feed-name">${esc(getMember(t.member).name)} <small>· Round ${t.round}</small></div><p>${esc(t.answer)}</p></div></article>`).join("")}
+</section>
+</section>
+</div>
+</main>`;
 
-function showResults() {
-  const scores = state.answers.map(x => scoreAnswer(x.answer));
-  const overall = Math.round(scores.reduce((a,b)=>a+b,0) / scores.length);
-  document.querySelector("#app").innerHTML = `
-    <main class="shell">
-      <section class="hero">
-        <span class="eyebrow">DEFENSE COMPLETE</span>
-        <h1>${overall}<small>/100</small></h1>
-        <p>Prototype readiness score based on answer depth. The full AI evaluator will replace this heuristic.</p>
-      </section>
-      <section class="card">
-        <h2>Defense transcript</h2>
-        ${state.answers.map(x => `<article class="transcript"><b>Round ${x.round}</b><p class="q">${x.question}</p><p>${x.answer || "<em>No answer</em>"}</p></article>`).join("")}
-      </section>
-      <button class="primary" onclick="location.reload()">Start another defense</button>
-    </main>`;
-}
-
-function render() {
-  document.querySelector("#app").innerHTML = `
-    <main class="shell">
-      <header class="topbar">
-        <div class="brand"><span class="logo">D</span><strong>DEFEND</strong></div>
-        <span class="round">ROUND ${state.round} / ${state.maxRounds}</span>
-      </header>
-      <section class="hero">
-        <span class="eyebrow">AI THESIS DEFENSE SIMULATOR</span>
-        <h1>Don't just answer.<br><em>Defend it.</em></h1>
-        <p>The panel follows your answer, finds weak points, and keeps pressing until your reasoning holds.</p>
-      </section>
-      <section class="card thesis">
-        <div class="label">CURRENT THESIS</div>
-        <strong>${state.thesis}</strong>
-      </section>
-      <section class="panel">
-        <div class="panel-head"><span class="status"></span> PANELIST</div>
-        <h2>${state.current}</h2>
-      </section>
-      <section class="answer card">
-        <div class="label">YOUR ANSWER</div>
-        <textarea id="answer" placeholder="Answer like you're in front of your panel..."></textarea>
-        <div class="actions">
-          <button class="secondary" id="voice">🎙 Voice</button>
-          <button class="primary" id="submit">Submit answer →</button>
-        </div>
-      </section>
-      <p class="hint">The next attack will be based on your response. Don't give a memorized answer — defend your reasoning.</p>
-    </main>`;
-  document.querySelector("#submit").onclick = () => {
-    const answer = document.querySelector("#answer").value.trim();
-    if (!answer) return document.querySelector("#answer").focus();
-    nextQuestion(answer);
-  };
-  document.querySelector("#voice").onclick = () => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      alert("Voice input is not supported by this browser yet.");
-      return;
-    }
-    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new Recognition();
-    recognition.lang = "en-US";
-    recognition.onresult = e => document.querySelector("#answer").value = e.results[0][0].transcript;
-    recognition.start();
-  };
+document.querySelector("#submit").onclick=()=>{
+const box=document.querySelector("#answer");
+const text=box.value.trim();
+if(!text)return box.focus();
+addAnswer(text);
+};
+document.querySelector("#copyRoom").onclick=async()=>{
+try{await navigator.clipboard.writeText(state.room);document.querySelector("#copyRoom").textContent="Copied!";setTimeout(()=>document.querySelector("#copyRoom").textContent="Copy",1200)}
+catch{document.querySelector("#copyRoom").textContent=state.room}
+};
+document.querySelector("#voice").onclick=()=>{
+const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!Recognition)return alert("Voice input is not supported by this browser.");
+const r=new Recognition();
+r.lang="en-US";
+r.onresult=e=>document.querySelector("#answer").value=e.results[0][0].transcript;
+r.start();
+};
 }
 render();
