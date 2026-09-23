@@ -48,7 +48,7 @@ participants:[],
 room:"DFND-7K4P",
 round:1,
 maxRounds:20,
-currentMember:"a",
+currentMember:clientId,
 connected:0,
 language:"taglish",
 personality:"aggressive",
@@ -106,7 +106,7 @@ document.querySelector("#app").innerHTML=`
 <h1>${created?"Your room is ready.":"Enter the room before the defense starts."}</h1>
 <p class="muted">${created?"Share this code with your group. Everyone joins the same room before the AI begins.":"Enter the code your group shared with you."}</p>
 <div class="room-input"><label>ROOM CODE</label><input id="roomInput" value="${created?state.room:""}" placeholder="DFND-7K4P" maxlength="9" autocomplete="off"></div>
-<div class="room-input"><label>YOUR NAME</label><input id="nameInput" value="${state.memberName}" placeholder="e.g. Ken" maxlength="24"></div>
+<div class="room-input"><label>YOUR NAME</label><input id="nameInput" value="${esc(state.memberName)}" placeholder="e.g. Ken" maxlength="24" autocomplete="name"></div>
 <div class="join-settings"><div><label>PANEL LANGUAGE</label><select id="joinLanguage"><option value="taglish">🇵🇭 Taglish</option><option value="tagalog">🇵🇭 Tagalog</option><option value="english">🇺🇸 English</option></select></div><div><label>PANEL STYLE</label><select id="joinStyle"><option value="aggressive">🔥 Aggressive</option><option value="balanced">⚖️ Balanced</option><option value="technical">🧠 Technical</option><option value="formal">🎓 Formal</option></select></div></div>
 <button class="primary big full" id="enter">Join room →</button>
 <p class="join-note">Joining does not start the defense. The AI can only begin after you have joined the room.</p>
@@ -120,7 +120,7 @@ document.querySelector("#enter").onclick=()=>{const code=document.querySelector(
 function renderLobby(){
 document.querySelector("#app").innerHTML=`
 <main class="room-shell"><header class="topbar"><div class="brand"><span class="logo">D</span><strong>DEFEND</strong><span class="live-pill">● ROOM LOBBY</span>${state.realtimeConnected?'<span class="sync-pill">● SYNCED</span>':realtimeConfigured?'<span class="sync-pill warn">CONNECTING…</span>':'<span class="sync-pill warn">LOCAL MODE</span>'}</div><div class="room-code"><span>ROOM</span><b>${esc(state.room)}</b><button id="copyRoom">Copy</button></div></header>
-<section class="lobby-wrap"><div class="lobby-main"><span class="eyebrow">YOU'RE IN</span><h1>Waiting for the defense to start.</h1><p class="muted">Everyone joins first. Then the AI panelist takes control and selects the first member to answer.</p><div class="lobby-thesis"><span class="label">SHARED THESIS</span><strong>${esc(state.thesis)}</strong></div><div class="lobby-status"><span class="ai-dot"></span><div><strong>AI PANELIST READY</strong><small>No human host. The AI will control the questions, targets, follow-ups, and ending.</small></div></div><button class="primary big full" id="start">Start AI Defense →</button></div>
+<section class="lobby-wrap"><div class="lobby-main"><span class="eyebrow">YOU'RE IN</span><h1>Waiting for the defense to start.</h1><p class="muted">Everyone joins first. Then the AI panelist takes control and selects the first member to answer.</p><div class="lobby-thesis"><span class="label">SHARED THESIS</span><strong>${esc(state.thesis)}</strong></div><div class="lobby-status"><span class="ai-dot"></span><div><strong>AI PANELIST READY</strong><small>No human host. The AI will control the questions, targets, follow-ups, and ending.</small></div></div>${state.realtimeStatus==="LOCAL_MODE"?'<div class="lobby-warning">Realtime is not configured yet. This device can enter the lobby, but other devices will not see this room until Supabase is connected.</div>':state.realtimeStatus==="ERROR"||state.realtimeStatus==="TIMEOUT"?'<div class="lobby-warning">Realtime could not connect. Check the deployment environment variables, then reload.</div>':''}<button class="primary big full" id="start" ${state.isCreator?"":"disabled"}>${state.isCreator?"Start AI Defense →":"Waiting for room creator →"}</button></div>
 <aside class="lobby-side"><div class="side-title">JOINED MEMBERS <span>${state.connected}/4</span></div><div class="members">${baseMembers().map(m=>`<div class="member ${m.id===clientId?"active":""}"><div class="avatar ${m.color}">${m.initials}<i class="on"></i></div><div><strong>${esc(m.id===clientId?state.memberName:m.name)}</strong><small>${m.id===clientId?"YOU · JOINED":"JOINED"}</small></div></div>`).join("")}</div><div class="side-card"><span class="label">PANEL LANGUAGE</span><strong>${state.language.toUpperCase()}</strong></div><div class="side-card"><span class="label">PANEL STYLE</span><strong>${state.personality.toUpperCase()}</strong></div></aside></div></main>`;
 document.querySelector("#start").onclick=async()=>{if(!state.isCreator)return;state.started=true;state.screen="room";state.round=1;const first=state.participants[0]?.id||clientId;state.currentMember=first;state.question=attacks[0];renderRoom();await sendEvent("start",{round:1,currentMember:first,question:attacks[0],language:state.language,personality:state.personality})};
 document.querySelector("#copyRoom").onclick=async()=>{try{await navigator.clipboard.writeText(state.room);document.querySelector("#copyRoom").textContent="Copied!";setTimeout(()=>document.querySelector("#copyRoom").textContent="Copy",1200)}catch{}};
