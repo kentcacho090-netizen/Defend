@@ -2,6 +2,10 @@
 
 Defend is a shared thesis-defense room. The AI is the only panelist and controller. There is no human host.
 
+## Entry and room flow
+
+The product must never drop a user directly into an active defense. The flow is: **Home → Create/Join Room → Join → Room Lobby → Start AI Defense → Live Defense**. Joining a room does not start the defense. The AI remains the only panelist/controller; creating a room does not create a human host role.
+
 ## Defense loop
 
 1. AI starts the defense room.
