@@ -63,6 +63,7 @@ async function joinRealtimeRoom(){
  if(!realtimeConfigured){state.realtimeConnected=false;return;}
  const result=await connectRoom(state.room,{name:state.memberName,role:state.isCreator?"controller":"member",onPresence:people=>{state.participants=people.sort((a,b)=>new Date(a.joinedAt)-new Date(b.joinedAt));state.connected=state.participants.length; if(state.screen==="lobby")renderLobby();else if(state.screen==="room")renderRoom()},onEvent:handleRealtimeEvent});
  state.realtimeConnected=result.ok;
+ if(result.ok){if(state.screen==="lobby")renderLobby();else if(state.screen==="room")renderRoom();}
  if(result.ok&&!state.isCreator)await sendEvent("request_snapshot",{requester:clientId});
 }
 async function handleRealtimeEvent(e){
