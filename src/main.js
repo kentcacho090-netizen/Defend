@@ -45,7 +45,7 @@ room:"DFND-7K4P",
 round:1,
 maxRounds:20,
 currentMember:"a",
-connected:3,
+connected:0,
 language:"taglish",
 personality:"aggressive",
 question:attacks[0],
@@ -57,7 +57,7 @@ thesis:"AI-IoT Predictive Maintenance for Residential Breakers via Waveform and 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const getMember=id=>members.find(m=>m.id===id)||members[0];
 const localize=q=>localized[state.language]?.(q)||q;
-const baseMembers=()=>state.participants.length?state.participants.map((p,i)=>({id:p.id,name:p.name,initials:(p.name||"??").slice(0,2).toUpperCase(),color:["lime","blue","purple","amber"][i%4],online:true,role:p.role})):members;
+const baseMembers=()=>state.participants.length?state.participants.map((p,i)=>({id:p.id,name:p.name,initials:(p.name||"??").slice(0,2).toUpperCase(),color:["lime","blue","purple","amber"][i%4],online:true,role:p.role})):[{id:clientId,name:state.memberName,initials:(state.memberName||"YO").slice(0,2).toUpperCase(),color:"lime",online:true,role:state.isCreator?"controller":"member"}];
 const memberLabel=id=>{const p=state.participants.find(x=>x.id===id);return p?.name||getMember(id).name};
 async function joinRealtimeRoom(){
  if(!realtimeConfigured){state.realtimeConnected=false;return;}
