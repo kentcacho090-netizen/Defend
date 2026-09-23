@@ -1,45 +1,127 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url=import.meta.env.VITE_SUPABASE_URL;
-const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-export const realtimeConfigured=Boolean(url&&key);
-export const clientId=localStorage.getItem("defend_client_id")||crypto.randomUUID();
-localStorage.setItem("defend_client_id",clientId);
+const url = import.meta.env.VITE_SUPABASE_URL?.trim();
+const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim();
 
-const supabase=realtimeConfigured?createClient(url,key):null;
-let channel=null;
+export const realtimeConfigured = Boolean(url && key);
 
-export async function connectRoom(roomCode,{name,role,onPresence,onEvent}){
- if(!realtimeConfigured)return {ok:false,reason:"missing_env"};
- if(channel)await supabase.removeChannel(channel);
- channel=supabase.channel("defend:"+roomCode,{
-   config:{broadcast:{ack:true},presence:{key:clientId}}
- });
- channel.on("presence",{event:"sync"},()=>{
-   const raw=channel.presenceState();
-   const people=Object.entries(raw).flatMap(([id,metas])=>metas.map(meta=>({...meta,id})));
-   onPresence?.(people);
- }).on("broadcast",{event:"defend_event"},payload=>{
-   onEvent?.(payload.payload);
- });
- return await new Promise(resolve=>{
-   channel.subscribe(async status=>{
-     if(status==="SUBSCRIBED"){
-       await channel.track({id:clientId,name,role,joinedAt:new Date().toISOString()});
-       resolve({ok:true});
-     }else if(status==="CHANNEL_ERROR"||status==="TIMED_OUT"){
-       resolve({ok:false,reason:status});
-     }
-   });
- });
+function makeClientId() {
+  try {
+    const existing = localStorage.getItem("defend_client_id");
+    if (existing) return existing;
+    const id = typeof crypto?.randomUUID === "function"
+      ? crypto.randomUUID()
+      : "client-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    localStorage.setItem("defend_client_id", id);
+    return id;
+  } catch {
+    return typeof crypto?.randomUUID === "function"
+      ? crypto.randomUUID()
+      : "client-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+  }
 }
 
-export async function sendEvent(event,payload){
- if(!channel)return false;
- const result=await channel.send({type:"broadcast",event:"defend_event",payload:{event,...payload}});
- return result==="ok";
+export const clientId = makeClientId();
+const supabase = realtimeConfigured ? createClient(url, key, {
+  auth: { persistSession: false, autoRefreshToken: false }
+}) : null;
+
+let channel = null;
+
+export async function connectRoom(roomCode, { name, role, onPresence, onEvent, onStatus }) {
+  if (!realtimeConfigured || !supabase) {
+    onStatus?.("LOCAL_MODE");
+    return { ok: false, reason: "missing_env" };
+  }
+
+  if (channel) {
+    await supabase.removeChannel(channel);
+    channel = null;
+  }
+
+  const safeRoom = String(roomCode || "").trim().toUpperCase();
+  if (!safeRoom) {
+    onStatus?.("ERROR");
+    return { ok: false, reason: "missing_room" };
+  }
+
+  channel = supabase.channel("defend:" + safeRoom, {
+    config: {
+      broadcast: { ack: true },
+      presence: { key: clientId }
+    }
+  });
+
+  channel
+    .on("presence", { event: "sync" }, () => {
+      const raw = channel?.presenceState?.() || {};
+      const people = Object.entries(raw).flatMap(([id, metas]) =>
+        metas.map(meta => ({ ...meta, id }))
+      );
+      onPresence?.(people);
+    })
+    .on("broadcast", { event: "defend_event" }, payload => {
+      onEvent?.(payload?.payload);
+    });
+
+  onStatus?.("CONNECTING");
+
+  return await new Promise(resolve => {
+    let settled = false;
+    const finish = result => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(result);
+    };
+
+    const timer = setTimeout(() => {
+      onStatus?.("TIMEOUT");
+      finish({ ok: false, reason: "timeout" });
+    }, 9000);
+
+    channel.subscribe(async status => {
+      if (status === "SUBSCRIBED") {
+        const trackResult = await channel.track({
+          id: clientId,
+          name: String(name || "Member").trim(),
+          role: role || "member",
+          joinedAt: new Date().toISOString()
+        });
+
+        if (trackResult !== "ok") {
+          onStatus?.("ERROR");
+          finish({ ok: false, reason: "presence_track_failed" });
+          return;
+        }
+
+        onStatus?.("SYNCED");
+        finish({ ok: true });
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        onStatus?.("ERROR");
+        finish({ ok: false, reason: status });
+      }
+    });
+  });
 }
 
-export async function disconnectRoom(){
- if(channel){await supabase.removeChannel(channel);channel=null;}
+export async function sendEvent(event, payload = {}) {
+  if (!channel) return false;
+  try {
+    const result = await channel.send({
+      type: "broadcast",
+      event: "defend_event",
+      payload: { event, ...payload }
+    });
+    return result === "ok";
+  } catch {
+    return false;
+  }
+}
+
+export async function disconnectRoom() {
+  if (channel && supabase) {
+    await supabase.removeChannel(channel);
+    channel = null;
+  }
 }
