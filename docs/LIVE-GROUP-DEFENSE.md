@@ -64,13 +64,13 @@ The next production layer is realtime persistence plus the server-side adaptive 
 
 ## Realtime room transport
 
-The live room uses Supabase Realtime Presence and Broadcast. Presence synchronizes who is currently connected to the room; Broadcast synchronizes defense events such as starting the defense, submitted answers, turn changes, and panel settings. This is the appropriate split for slow-changing presence and live event delivery. citeturn2search0turn3search2
+The live room uses Supabase Realtime Presence and Broadcast. Presence synchronizes who is currently connected to the room; Broadcast synchronizes defense events such as starting the defense, submitted answers, turn changes, and panel settings. This is the appropriate split for slow-changing presence and live event delivery.
 
 Set these Vercel environment variables before testing multiple devices:
 
 - VITE_SUPABASE_URL
 - VITE_SUPABASE_PUBLISHABLE_KEY
 
-These are Vite client variables, so they are public configuration values; do not put a secret/service-role key in a VITE_ variable. citeturn1search0turn2search0
+These are Vite client variables, so they are public configuration values; do not put a secret/service-role key in a VITE_ variable.
 
-The Supabase project must allow the Realtime channel to be used by the clients. The current prototype uses a public room channel for simple group-defense testing. For a production deployment, add Realtime Authorization/private channels and authenticated membership checks so an arbitrary person cannot join a room by guessing its code. citeturn3search5
+The Supabase project must allow the Realtime channel to be used by the clients. The current prototype uses a public room channel for simple group-defense testing. For a production deployment, add Realtime Authorization/private channels and authenticated membership checks so an arbitrary person cannot join a room by guessing its code.
